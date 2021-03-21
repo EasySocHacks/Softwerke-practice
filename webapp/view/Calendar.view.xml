@@ -1,0 +1,14 @@
+<mvc:View
+		controllerName="itmo2021calendareny.controller.Calendar"
+        xmlns:l="sap.ui.layout"
+		xmlns:u="sap.ui.unified"
+		xmlns:mvc="sap.ui.core.mvc"
+		xmlns="sap.m"
+		class="viewPadding">
+	<u:Calendar
+            id="calendar"
+            intervalSelection="true"
+            showWeekNumbers="false"
+            months="12"
+            width="100%"/>
+</mvc:View>

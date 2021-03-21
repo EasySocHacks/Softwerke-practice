@@ -8,7 +8,9 @@
 		<App id="app">
 			<pages>
 				<Page id="page" title="{i18n>title}">
-					<content />
+                    <content>
+                        <mvc:XMLView viewName="itmo2021calendareny.view.Calendar"/>
+					</content>
 				</Page>
 			</pages>
 		</App>
