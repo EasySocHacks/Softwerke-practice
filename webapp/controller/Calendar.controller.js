@@ -1,11 +1,14 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller", 
     'sap/ui/core/format/DateFormat',
-    'sap/ui/core/library'
-], function (Controller, DateFormat, coreLibrary) {
+    'sap/ui/core/library',
+    'sap/ui/unified/DateTypeRange',
+    'sap/ui/core/TooltipBase'
+], function (Controller, DateFormat, coreLibrary, DateTypeRange, TooltipBase) {
     "use strict";
 
     var CalendarType = coreLibrary.CalendarType;
+    var specialDaysTypeArray = ["Type18", "Type02", "Type06", "Type10"];
 
     return Controller.extend("itmo2021calendareny.controller.Calendar", {
         oFormatYyyy: null,
@@ -18,29 +21,51 @@ sap.ui.define([
             var calendar = this.byId("calendar");
             
             calendar.displayDate(new Date(this.currentYear, 0, 1));
-        }/*,
 
-        onAfterRendering: function() {
-            var calendar = this.byId("calendar");
-            var header = calendar.getAggregation("header");
+            fetch("https://raw.githubusercontent.com/xmlcalendar/data/72a9c34dcb65d2a955eddb1e97809cb84198b9fa/ru/2021/calendar.xml")
+                    .then(response => response.text())
+                    .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
+                    .then(data => {
+                        var oModel = new sap.ui.model.xml.XMLModel();
+                        oModel.setData(data);
+                        this.getView().setModel(oModel);
 
-            //Somehow doesn't work
-            header.setVisibleButton1(false);
+                        for (var i = 0; i < 366; i++) {
+                            var dateString = oModel.getProperty("/days/day/" + i + "/@d");
+                            var dateArray = dateString.split(".");
+                            var mounthString = dateArray[0];
+                            var dayString = dateArray[1];
 
-            header.attachPressNext(function(oEvent) {
-                //mEventRegistry.press = undefined
-                //The problem is to get an existing handler from a new one or
-                //to get it from an external source => this way we need a link to the button.
-                //Instead this we got just a functions to manipulate with this buttons...
-                //
-                //This code allows us to detach current attached function, despite this we still have no info,
-                // how to get an initial one...
-                header.detachPressNext(oEvent.getSource().mEventRegistry.press[0].fFunction);
+                            var specialDayType = 
+                                specialDaysTypeArray[parseInt(oModel.getProperty("/days/day/" + i + "/@t"))];
 
-                //Here we would be detach current handler and attach a new handler to shift 12 months:
-                //Increment(Decrement to previous button) this.currentYear and do calendar.displayDate.
-            });
-        }*/
+                            if (oModel.getProperty("/days/day/" + i + "/@f")) {
+                                specialDayType = specialDaysTypeArray[0]
+                            }
+
+                            var dateTypeRange = new DateTypeRange({
+                                startDate: new Date(this.currentYear, parseInt(mounthString) - 1, parseInt(dayString)),
+                                type: specialDayType
+                            });
+
+                            if (oModel.getProperty("/days/day/" + i + "/@h")) {
+                                var holidayId = parseInt(oModel.getProperty("/days/day/" + i + "/@h")) - 1;
+
+                                dateTypeRange.setAggregation("tooltip", 
+                                    oModel.getProperty("/holidays/holiday/" + holidayId + "/@title"));
+                            }
+
+                            if (oModel.getProperty("/days/day/" + i + "/@f")) {
+                                var holidayFromDate = oModel.getProperty("/days/day/" + i + "/@f");
+
+                                dateTypeRange.setAggregation("tooltip", "Перенесен с " + holidayFromDate);
+                            }
+
+                            calendar.addSpecialDate(dateTypeRange);
+                                
+                        }
+                    });
+        }
     });
 
 });
