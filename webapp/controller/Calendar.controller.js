@@ -3,12 +3,14 @@ sap.ui.define([
     'sap/ui/core/format/DateFormat',
     'sap/ui/core/library',
     'sap/ui/unified/DateTypeRange',
-    'sap/ui/core/TooltipBase'
-], function (Controller, DateFormat, coreLibrary, DateTypeRange, TooltipBase) {
+    'sap/ui/core/TooltipBase',
+    'sap/ui/unified/CalendarLegend',
+    'sap/ui/unified/CalendarLegendItem'
+], function (Controller, DateFormat, coreLibrary, DateTypeRange, TooltipBase, CalendarLegend, CalendarLegendItem) {
     "use strict";
 
     var CalendarType = coreLibrary.CalendarType;
-    var specialDaysTypeArray = ["Type18", "Type02", "Type06", "Type10"];
+    var specialDaysTypeArray = ["Type18", "Type02", "Type05", "Type10"];
 
     return Controller.extend("itmo2021calendareny.controller.Calendar", {
         oFormatYyyy: null,
@@ -30,7 +32,7 @@ sap.ui.define([
                         oModel.setData(data);
                         this.getView().setModel(oModel);
 
-                        for (var i = 0; i < 366; i++) {
+                        for (var i = 0; i < 24; i++) {
                             var dateString = oModel.getProperty("/days/day/" + i + "/@d");
                             var dateArray = dateString.split(".");
                             var mounthString = dateArray[0];
@@ -62,9 +64,30 @@ sap.ui.define([
                             }
 
                             calendar.addSpecialDate(dateTypeRange);
-                                
                         }
                     });
+
+            var legend = this.byId("calendarLegend");
+
+            legend.addItem(new CalendarLegendItem({
+                text: "Перенесенный выходной день",
+                type: specialDaysTypeArray[0]
+            }));
+
+            legend.addItem(new CalendarLegendItem({
+                text: "Государственный праздник",
+                type: specialDaysTypeArray[1]
+            }));
+
+            legend.addItem(new CalendarLegendItem({
+                text: "Рабочий и сокращенный день",
+                type: specialDaysTypeArray[2]
+            }));
+
+            legend.addItem(new CalendarLegendItem({
+                text: "Рабочий день (суббота/воскресенье)",
+                type: specialDaysTypeArray[3]
+            }));
         }
     });
 

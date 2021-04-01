@@ -5,11 +5,13 @@
 		xmlns:mvc="sap.ui.core.mvc"
 		xmlns="sap.m"
 		class="viewPadding">
+    <u:CalendarLegend id="calendarLegend" columnWidth="200px"/>
 	<u:Calendar
             id="calendar"
             intervalSelection="true"
             showWeekNumbers="false"
             months="12"
-            width="100%">
+            width="100%"
+            legend="calendarLegend">
     </u:Calendar>
 </mvc:View>
