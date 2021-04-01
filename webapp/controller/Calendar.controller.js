@@ -32,7 +32,7 @@ sap.ui.define([
                         oModel.setData(data);
                         this.getView().setModel(oModel);
 
-                        for (var i = 0; i < 24; i++) {
+                        for (var i = 0; i < 366; i++) {
                             var dateString = oModel.getProperty("/days/day/" + i + "/@d");
                             var dateArray = dateString.split(".");
                             var mounthString = dateArray[0];
