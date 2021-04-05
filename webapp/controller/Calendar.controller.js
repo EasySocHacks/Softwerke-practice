@@ -9,8 +9,8 @@ sap.ui.define([
 ], function (Controller, DateFormat, coreLibrary, DateTypeRange, TooltipBase, CalendarLegend, CalendarLegendItem) {
     "use strict";
 
-    var CalendarType = coreLibrary.CalendarType;
-    var specialDaysTypeArray = ["Type18", "Type02", "Type05", "Type10"];
+    const CalendarType = coreLibrary.CalendarType;
+    const specialDaysTypeArray = ["Type18", "Type02", "Type05", "Type10"];
 
     return Controller.extend("itmo2021calendareny.controller.Calendar", {
         oFormatYyyy: null,
@@ -20,7 +20,7 @@ sap.ui.define([
             this.oFormatYyyy = DateFormat.getInstance({pattern: "yyyy", calendarType: CalendarType.Gregorian});
             this.currentYear = this.oFormatYyyy.format(new Date());
 
-            var calendar = this.byId("calendar");
+            const calendar = this.byId("calendar");
             
             calendar.displayDate(new Date(this.currentYear, 0, 1));
 
@@ -28,37 +28,37 @@ sap.ui.define([
                     .then(response => response.text())
                     .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
                     .then(data => {
-                        var oModel = new sap.ui.model.xml.XMLModel();
+                        const oModel = new sap.ui.model.xml.XMLModel();
                         oModel.setData(data);
                         this.getView().setModel(oModel);
 
-                        for (var i = 0; i < 366; i++) {
-                            var dateString = oModel.getProperty("/days/day/" + i + "/@d");
-                            var dateArray = dateString.split(".");
-                            var mounthString = dateArray[0];
-                            var dayString = dateArray[1];
+                        for (let i = 0; i < 366; i++) {
+                            const dateString = oModel.getProperty("/days/day/" + i + "/@d");
+                            const dateArray = dateString.split(".");
+                            const mounthString = dateArray[0];
+                            const dayString = dateArray[1];
 
-                            var specialDayType = 
+                            let specialDayType = 
                                 specialDaysTypeArray[parseInt(oModel.getProperty("/days/day/" + i + "/@t"))];
 
                             if (oModel.getProperty("/days/day/" + i + "/@f")) {
                                 specialDayType = specialDaysTypeArray[0]
                             }
 
-                            var dateTypeRange = new DateTypeRange({
+                            const dateTypeRange = new DateTypeRange({
                                 startDate: new Date(this.currentYear, parseInt(mounthString) - 1, parseInt(dayString)),
                                 type: specialDayType
                             });
 
                             if (oModel.getProperty("/days/day/" + i + "/@h")) {
-                                var holidayId = parseInt(oModel.getProperty("/days/day/" + i + "/@h")) - 1;
+                                const holidayId = parseInt(oModel.getProperty("/days/day/" + i + "/@h")) - 1;
 
                                 dateTypeRange.setAggregation("tooltip", 
                                     oModel.getProperty("/holidays/holiday/" + holidayId + "/@title"));
                             }
 
                             if (oModel.getProperty("/days/day/" + i + "/@f")) {
-                                var holidayFromDate = oModel.getProperty("/days/day/" + i + "/@f");
+                                const holidayFromDate = oModel.getProperty("/days/day/" + i + "/@f");
 
                                 dateTypeRange.setAggregation("tooltip", "Перенесен с " + holidayFromDate);
                             }
@@ -67,7 +67,7 @@ sap.ui.define([
                         }
                     });
 
-            var legend = this.byId("calendarLegend");
+            const legend = this.byId("calendarLegend");
 
             legend.addItem(new CalendarLegendItem({
                 text: "Перенесенный выходной день",
@@ -75,7 +75,7 @@ sap.ui.define([
             }));
 
             legend.addItem(new CalendarLegendItem({
-                text: "Государственный праздник",
+                text: "Государственный праздник или выходной день",
                 type: specialDaysTypeArray[1]
             }));
 
