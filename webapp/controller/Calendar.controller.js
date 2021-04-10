@@ -8,13 +8,23 @@ sap.ui.define([
     'sap/ui/unified/CalendarLegendItem',
     "sap/m/Text",
     "sap/m/ColumnListItem",
-    "sap/m/Button"
+    "sap/m/Button",
+    "sap/m/MessageToast"
 ], function (Controller, DateFormat, coreLibrary, DateTypeRange, TooltipBase, 
-            CalendarLegend, CalendarLegendItem, Text, ColumnListItem, Button) {
+            CalendarLegend, CalendarLegendItem, Text, ColumnListItem, Button, Toast) {
     "use strict";
 
     const CalendarType = coreLibrary.CalendarType;
     const specialDaysTypeArray = ["Type18", "Type02", "Type05", "Type10"];
+    const dayOfWeekNameToInt = {
+        "пн": 0,
+        "вт": 1,
+        "ср": 2,
+        "чт": 3,
+        "пт": 4,
+        "сб": 5,
+        "вс": 6,
+    };
 
     return Controller.extend("itmo2021calendareny.controller.Calendar", {
         oFormatYyyy: null,
@@ -92,7 +102,91 @@ sap.ui.define([
                 text: "Рабочий день (суббота/воскресенье)",
                 type: specialDaysTypeArray[3]
             }));
+        },
+
+        onAddVacation: function(oEvent) {
+            const calendar = this.byId("calendar");
+            const dateFormatYYYY = DateFormat.getInstance({pattern: "yyyy", calendarType: CalendarType.Gregorian});
+            const dateFormatMM = DateFormat.getInstance({pattern: "MM", calendarType: CalendarType.Gregorian});
+            const dateFormatDD = DateFormat.getInstance({pattern: "dd", calendarType: CalendarType.Gregorian});
+            const dateFormatEE = DateFormat.getInstance({pattern: "EE", calendarType: CalendarType.Gregorian});
+
+            if (calendar.getSelectedDates()[0] == undefined) {
+                Toast.show("Выделите период, чтобы добавить отпуск");
+                return
+            }
+
+            const startDate = calendar.getSelectedDates()[0].getStartDate();
+            const endDate = calendar.getSelectedDates()[0].getEndDate();
+
+            const startDateString = 
+                dateFormatDD.format(startDate) + "." +
+                dateFormatMM.format(startDate) + "." +
+                dateFormatYYYY.format(startDate);
+
+            const endDateString = 
+                dateFormatDD.format(endDate) + "." +
+                dateFormatMM.format(endDate) + "." +
+                dateFormatYYYY.format(endDate);
+
+            const daysBetweenInTime = Math.abs(startDate.getTime() - endDate.getTime());
+            const daysBetween = Math.ceil(daysBetweenInTime / (1000 * 60 * 60 * 24)) + 1;
+            let workingDaysBetween = daysBetween;
+
+            calendar.getSpecialDates().forEach(
+                specialDate => {
+                    if (specialDate.getStartDate() < startDate || specialDate.getStartDate() > endDate) {
+                        return;
+                    }
+
+                    const specialDayOfWeek = dateFormatEE.format(specialDate.getStartDate());
+                    const isEndOfWeek = (specialDayOfWeek == "сб" || specialDayOfWeek == "вс");
+
+                    if (specialDate.getType() == specialDaysTypeArray[0] && !isEndOfWeek) {
+                        workingDaysBetween--;
+                    }
+                    
+                    if (specialDate.getType() == specialDaysTypeArray[1] && !isEndOfWeek) {
+                        workingDaysBetween--;
+                    }
+
+                    if (specialDate.getType() == specialDaysTypeArray[2] && isEndOfWeek) {
+                        workingDaysBetween++;
+                    }
+
+                    if (specialDate.getType() == specialDaysTypeArray[3]) {
+                        workingDaysBetween++;
+                    }
+                });
+
+            let tmpDaysBetweenCounter = daysBetween
+
+            const startDateDayOfWeek = dayOfWeekNameToInt[dateFormatEE.format(startDate)];
+
+            for (let i = startDateDayOfWeek; tmpDaysBetweenCounter > 0; i = (i + 1) % 7, tmpDaysBetweenCounter--) {
+                if (i == 5 || i == 6) {
+                    workingDaysBetween--;
+                }
+            }
+
+            this.addRowToVacationTable(startDateString, endDateString, daysBetween, workingDaysBetween);
+        },
+
+        addRowToVacationTable: function(startDate, endDate, fullDays, workingDays) {
+            this.byId("table").addItem(new ColumnListItem({
+                cells: [
+                    new Text({text: startDate}),
+                    new Text({text: endDate}),
+                    new Text({text: fullDays}),
+                    new Text({text: workingDays}),
+                    new Button({
+                        icon: "sap-icon://delete",
+                        press: function(oEvent) {
+                            //TODO: onDelete handler
+                        }
+                    })
+                ]
+            }));
         }
     });
-
 });

@@ -22,6 +22,10 @@
             <Column/> 
         </columns>
     </Table>
+    <Button 
+        icon="sap-icon://add"
+        press=".onAddVacation"
+    />
     <u:CalendarLegend id="calendarLegend" columnWidth="200px"/>
 	<u:Calendar
             id="calendar"
