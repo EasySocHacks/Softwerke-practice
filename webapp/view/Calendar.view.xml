@@ -5,6 +5,23 @@
 		xmlns:mvc="sap.ui.core.mvc"
 		xmlns="sap.m"
 		class="viewPadding">
+    <Table id="table">
+        <columns>
+            <Column>
+                <Label text="Дата начала"/>
+            </Column>
+            <Column>
+                <Label text="Дата окончания"/>
+            </Column>
+            <Column>
+                <Label text="Количество дней (включая праздники)"/>
+            </Column>
+            <Column>
+                <Label text="Количество рабочих дней"/>
+            </Column>
+            <Column/> 
+        </columns>
+    </Table>
     <u:CalendarLegend id="calendarLegend" columnWidth="200px"/>
 	<u:Calendar
             id="calendar"

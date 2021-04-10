@@ -5,8 +5,12 @@ sap.ui.define([
     'sap/ui/unified/DateTypeRange',
     'sap/ui/core/TooltipBase',
     'sap/ui/unified/CalendarLegend',
-    'sap/ui/unified/CalendarLegendItem'
-], function (Controller, DateFormat, coreLibrary, DateTypeRange, TooltipBase, CalendarLegend, CalendarLegendItem) {
+    'sap/ui/unified/CalendarLegendItem',
+    "sap/m/Text",
+    "sap/m/ColumnListItem",
+    "sap/m/Button"
+], function (Controller, DateFormat, coreLibrary, DateTypeRange, TooltipBase, 
+            CalendarLegend, CalendarLegendItem, Text, ColumnListItem, Button) {
     "use strict";
 
     const CalendarType = coreLibrary.CalendarType;
