@@ -25,14 +25,16 @@ sap.ui.define([
         "сб": 5,
         "вс": 6,
     };
+    const dateFormatYYYY = DateFormat.getInstance({pattern: "yyyy", calendarType: CalendarType.Gregorian});
+    const dateFormatMM = DateFormat.getInstance({pattern: "MM", calendarType: CalendarType.Gregorian});
+    const dateFormatDD = DateFormat.getInstance({pattern: "dd", calendarType: CalendarType.Gregorian});
+    const dateFormatEE = DateFormat.getInstance({pattern: "EE", calendarType: CalendarType.Gregorian});
 
     return Controller.extend("itmo2021calendareny.controller.Calendar", {
-        oFormatYyyy: null,
         currentYear: null,
 
         onInit: function() {
-            this.oFormatYyyy = DateFormat.getInstance({pattern: "yyyy", calendarType: CalendarType.Gregorian});
-            this.currentYear = this.oFormatYyyy.format(new Date());
+            this.currentYear = dateFormatYYYY.format(new Date());
 
             const calendar = this.byId("calendar");
             
@@ -106,10 +108,6 @@ sap.ui.define([
 
         onAddVacation: function(oEvent) {
             const calendar = this.byId("calendar");
-            const dateFormatYYYY = DateFormat.getInstance({pattern: "yyyy", calendarType: CalendarType.Gregorian});
-            const dateFormatMM = DateFormat.getInstance({pattern: "MM", calendarType: CalendarType.Gregorian});
-            const dateFormatDD = DateFormat.getInstance({pattern: "dd", calendarType: CalendarType.Gregorian});
-            const dateFormatEE = DateFormat.getInstance({pattern: "EE", calendarType: CalendarType.Gregorian});
 
             if (calendar.getSelectedDates()[0] == undefined) {
                 Toast.show("Выделите период, чтобы добавить отпуск");
@@ -161,15 +159,19 @@ sap.ui.define([
 
             let tmpDaysBetweenCounter = daysBetween
 
-            const startDateDayOfWeek = dayOfWeekNameToInt[dateFormatEE.format(startDate)];
-
-            for (let i = startDateDayOfWeek; tmpDaysBetweenCounter > 0; i = (i + 1) % 7, tmpDaysBetweenCounter--) {
+            for (let i = dayOfWeekNameToInt[dateFormatEE.format(startDate)]; 
+                tmpDaysBetweenCounter > 0; 
+                i = (i + 1) % 7, tmpDaysBetweenCounter--) {
                 if (i == 5 || i == 6) {
                     workingDaysBetween--;
                 }
             }
 
+            //TODO: Add checks
+
             this.addRowToVacationTable(startDateString, endDateString, daysBetween, workingDaysBetween);
+
+            //TODO: Delete selection after adding
         },
 
         addRowToVacationTable: function(startDate, endDate, fullDays, workingDays) {
