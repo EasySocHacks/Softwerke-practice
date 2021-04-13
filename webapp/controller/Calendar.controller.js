@@ -9,10 +9,15 @@ sap.ui.define([
     "sap/m/Text",
     "sap/m/ColumnListItem",
     "sap/m/Button",
-    "sap/m/MessageToast"
+    "sap/m/MessageToast",
+    "sap/ui/model/Sorter"
 ], function (Controller, DateFormat, coreLibrary, DateTypeRange, TooltipBase, 
-            CalendarLegend, CalendarLegendItem, Text, ColumnListItem, Button, Toast) {
+            CalendarLegend, CalendarLegendItem, Text, ColumnListItem, Button, Toast, Sorter) {
     "use strict";
+
+    let vacationDaysCount = 0;
+    let vacationCount = 0;
+    let vacationWithAtLeastFourteenDaysCount = 0;
 
     const CalendarType = coreLibrary.CalendarType;
     const specialDaysTypeArray = ["Type18", "Type02", "Type05", "Type10"];
@@ -30,10 +35,15 @@ sap.ui.define([
     const dateFormatDD = DateFormat.getInstance({pattern: "dd", calendarType: CalendarType.Gregorian});
     const dateFormatEE = DateFormat.getInstance({pattern: "EE", calendarType: CalendarType.Gregorian});
 
+    const vacationTableModel = new sap.ui.model.json.JSONModel();
+
     return Controller.extend("itmo2021calendareny.controller.Calendar", {
         currentYear: null,
-
+        
         onInit: function() {
+            this.getView().setModel(vacationTableModel, "vacation");            
+            vacationTableModel.setData({"list": []});
+
             this.currentYear = dateFormatYYYY.format(new Date());
 
             const calendar = this.byId("calendar");
@@ -111,11 +121,16 @@ sap.ui.define([
 
             if (calendar.getSelectedDates()[0] == undefined) {
                 Toast.show("Выделите период, чтобы добавить отпуск");
-                return
+                return;
             }
 
             const startDate = calendar.getSelectedDates()[0].getStartDate();
             const endDate = calendar.getSelectedDates()[0].getEndDate();
+
+            if (endDate == null) {
+                Toast.show("Выделите период, чтобы добавить отпуск");
+                return;
+            }
 
             const startDateString = 
                 dateFormatDD.format(startDate) + "." +
@@ -130,6 +145,7 @@ sap.ui.define([
             const daysBetweenInTime = Math.abs(startDate.getTime() - endDate.getTime());
             const daysBetween = Math.ceil(daysBetweenInTime / (1000 * 60 * 60 * 24)) + 1;
             let workingDaysBetween = daysBetween;
+            let holidaysOnWorkingDaysBetween = 0;
 
             calendar.getSpecialDates().forEach(
                 specialDate => {
@@ -139,6 +155,10 @@ sap.ui.define([
 
                     const specialDayOfWeek = dateFormatEE.format(specialDate.getStartDate());
                     const isEndOfWeek = (specialDayOfWeek == "сб" || specialDayOfWeek == "вс");
+
+                    if (specialDate.getType() == specialDaysTypeArray[1]) {
+                        holidaysOnWorkingDaysBetween++;
+                    }
 
                     if (specialDate.getType() == specialDaysTypeArray[0] && !isEndOfWeek) {
                         workingDaysBetween--;
@@ -167,28 +187,166 @@ sap.ui.define([
                 }
             }
 
-            //TODO: Add checks
+            const dateFormat = DateFormat.getInstance({pattern: "dd.MM.yyyy", calendarType: CalendarType.Gregorian});
+            let isOverlapping = false;
+
+            this.byId("table").getItems().forEach(item => {
+                const itemStartDate = dateFormat.parse(item.getAggregation("cells")[0].getText());
+                const itemEndDate = dateFormat.parse(item.getAggregation("cells")[1].getText());
+
+                if (!(itemEndDate < startDate || itemStartDate > endDate)) {
+                    Toast.show("Даты отпусков не должны пересекаться");
+
+                    isOverlapping = true;
+                    return;
+                }
+            });
+
+            if (isOverlapping) {
+                return;
+            }
+
+            vacationCount++;
+
+            if (vacationCount > 4) {
+                this.byId("checkBoxVacationCount").setSelected(false);
+            }
+
+            vacationDaysCount += (daysBetween - holidaysOnWorkingDaysBetween);
+
+            if (vacationDaysCount > 28) {
+                this.byId("checkBoxSumDays").setSelected(false);
+            }
+
+            if (daysBetween - holidaysOnWorkingDaysBetween >= 14) {
+                vacationWithAtLeastFourteenDaysCount++;
+                this.byId("checkBoxLongestVacationDuration").setSelected(true);
+            }
 
             this.addRowToVacationTable(startDateString, endDateString, daysBetween, workingDaysBetween);
 
-            //TODO: Delete selection after adding
+            calendar.removeAllSelectedDates();
         },
 
         addRowToVacationTable: function(startDate, endDate, fullDays, workingDays) {
-            this.byId("table").addItem(new ColumnListItem({
-                cells: [
-                    new Text({text: startDate}),
-                    new Text({text: endDate}),
-                    new Text({text: fullDays}),
-                    new Text({text: workingDays}),
-                    new Button({
-                        icon: "sap-icon://delete",
-                        press: function(oEvent) {
-                            //TODO: onDelete handler
-                        }
-                    })
-                ]
-            }));
+            const newData = vacationTableModel.getProperty("/list");
+            newData.push({
+                "startDate": startDate,
+                "endDate": endDate,
+                "fullDays": fullDays,
+                "workingDays": workingDays
+            });
+
+            vacationTableModel.setData({"list": newData});
+        },
+
+        onConfirmVacation: function(oEvent) {
+            if (this.byId("checkBoxSumDays").getSelected() == true &&
+                this.byId("checkBoxVacationCount").getSelected() == true &&
+                this.byId("checkBoxLongestVacationDuration").getSelected() == true) {
+                this.changeVacationTableToolsVisible(false);
+            } else {
+                Toast.show("Все условия должны быть выполнены");
+            }
+        },
+
+        sorterComparator : function(firstDate, secondDate) {
+            const dateFormat = DateFormat.getInstance({pattern: "dd.MM.yyyy", calendarType: CalendarType.Gregorian});
+
+            const firstStartDate = dateFormat.parse(firstDate);
+
+            const secondStartDate = dateFormat.parse(secondDate);
+
+            if (firstStartDate < secondStartDate) {
+                return -1;
+            } else if (firstStartDate > secondStartDate) {
+                return 1;
+            } else {
+                return 0;
+            }
+        },
+
+        onDelete: function(oEvent) {
+            const calendar = this.byId("calendar");
+
+            const rowCells = oEvent.getSource().getParent().getCells();
+            const startDateText = rowCells[0].getText();
+            const endDateText = rowCells[1].getText();
+            const fullDaysText = rowCells[2].getText();
+            const workingDaysText = rowCells[3].getText();
+
+            const newData = vacationTableModel.getProperty("/list").filter(
+                function(value) {
+                    return !(
+                        startDateText == value["startDate"] &&
+                        endDateText == value["endDate"] &&
+                        fullDaysText == value["fullDays"] &&
+                        workingDaysText == value["workingDays"]
+                    );
+                }
+            );
+
+            vacationTableModel.setData({"list": newData});
+
+            const dateFormat = DateFormat.getInstance({pattern: "dd.MM.yyyy", calendarType: CalendarType.Gregorian});
+
+            const checkBoxSumDays = this.byId("checkBoxSumDays");
+            const checkBoxVacationCount = this.byId("checkBoxVacationCount");
+            const checkBoxLongestVacationDuration = this.byId("checkBoxLongestVacationDuration");
+
+            const startDate = dateFormat.parse(startDateText);
+            const endDate = dateFormat.parse(endDateText);
+
+            const daysBetweenInTime = Math.abs(startDate.getTime() - endDate.getTime());
+            const daysBetween = Math.ceil(daysBetweenInTime / (1000 * 60 * 60 * 24)) + 1;
+            let holidaysOnWorkingDaysBetween = 0;
+
+            calendar.getSpecialDates().forEach(
+                specialDate => {
+                    if (specialDate.getStartDate() < startDate || specialDate.getStartDate() > endDate) {
+                        return;
+                    }
+
+                    if (specialDate.getType() == specialDaysTypeArray[1]) {
+                        holidaysOnWorkingDaysBetween++;
+                    }
+                }
+            );
+
+            vacationCount--;
+
+            if (vacationCount <= 4) {
+                checkBoxVacationCount.setSelected(true);
+            }
+
+            vacationDaysCount -= (daysBetween - holidaysOnWorkingDaysBetween);
+
+            if (vacationDaysCount <= 28) {
+                checkBoxSumDays.setSelected(true);
+            }
+            
+            if (daysBetween - holidaysOnWorkingDaysBetween >= 14) {
+                vacationWithAtLeastFourteenDaysCount--;
+
+                if (vacationWithAtLeastFourteenDaysCount == 0) {
+                    checkBoxLongestVacationDuration.setSelected(false);
+                }
+            }
+        }, 
+
+        onFixVacation: function(oEvent) {
+            this.changeVacationTableToolsVisible(true);
+        },
+
+        changeVacationTableToolsVisible(isVisible) {
+            this.byId("addVacationButton").setVisible(isVisible);
+            this.byId("confirmVacationButton").setVisible(isVisible);
+            this.byId("checkBoxSumDays").setVisible(isVisible);
+            this.byId("checkBoxVacationCount").setVisible(isVisible);
+            this.byId("checkBoxLongestVacationDuration").setVisible(isVisible);
+            this.byId("table").getItems().forEach(item =>
+                item.getAggregation("cells")[4].setEnabled(isVisible));
+            this.byId("fixVacationButton").setVisible(!isVisible);
         }
     });
 });
