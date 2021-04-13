@@ -30,6 +30,8 @@ sap.ui.define([
         "сб": 5,
         "вс": 6,
     };
+
+    const dateFormat = DateFormat.getInstance({pattern: "dd.MM.yyyy", calendarType: CalendarType.Gregorian});
     const dateFormatYYYY = DateFormat.getInstance({pattern: "yyyy", calendarType: CalendarType.Gregorian});
     const dateFormatMM = DateFormat.getInstance({pattern: "MM", calendarType: CalendarType.Gregorian});
     const dateFormatDD = DateFormat.getInstance({pattern: "dd", calendarType: CalendarType.Gregorian});
@@ -187,7 +189,6 @@ sap.ui.define([
                 }
             }
 
-            const dateFormat = DateFormat.getInstance({pattern: "dd.MM.yyyy", calendarType: CalendarType.Gregorian});
             let isOverlapping = false;
 
             this.byId("table").getItems().forEach(item => {
@@ -251,8 +252,6 @@ sap.ui.define([
         },
 
         sorterComparator : function(firstDate, secondDate) {
-            const dateFormat = DateFormat.getInstance({pattern: "dd.MM.yyyy", calendarType: CalendarType.Gregorian});
-
             const firstStartDate = dateFormat.parse(firstDate);
 
             const secondStartDate = dateFormat.parse(secondDate);
@@ -287,8 +286,6 @@ sap.ui.define([
             );
 
             vacationTableModel.setData({"list": newData});
-
-            const dateFormat = DateFormat.getInstance({pattern: "dd.MM.yyyy", calendarType: CalendarType.Gregorian});
 
             const checkBoxSumDays = this.byId("checkBoxSumDays");
             const checkBoxVacationCount = this.byId("checkBoxVacationCount");
