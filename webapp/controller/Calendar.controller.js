@@ -146,8 +146,7 @@ sap.ui.define([
 
             const daysBetweenInTime = Math.abs(startDate.getTime() - endDate.getTime());
             const daysBetween = Math.ceil(daysBetweenInTime / (1000 * 60 * 60 * 24)) + 1;
-            let workingDaysBetween = daysBetween;
-            let holidaysOnWorkingDaysBetween = 0;
+            let holidaysBetween = 0;
 
             calendar.getSpecialDates().forEach(
                 specialDate => {
@@ -155,39 +154,11 @@ sap.ui.define([
                         return;
                     }
 
-                    const specialDayOfWeek = dateFormatEE.format(specialDate.getStartDate());
-                    const isEndOfWeek = (specialDayOfWeek == "сб" || specialDayOfWeek == "вс");
-
-                    if (specialDate.getType() == specialDaysTypeArray[1]) {
-                        holidaysOnWorkingDaysBetween++;
-                    }
-
-                    if (specialDate.getType() == specialDaysTypeArray[0] && !isEndOfWeek) {
-                        workingDaysBetween--;
-                    }
-                    
-                    if (specialDate.getType() == specialDaysTypeArray[1] && !isEndOfWeek) {
-                        workingDaysBetween--;
-                    }
-
-                    if (specialDate.getType() == specialDaysTypeArray[2] && isEndOfWeek) {
-                        workingDaysBetween++;
-                    }
-
-                    if (specialDate.getType() == specialDaysTypeArray[3]) {
-                        workingDaysBetween++;
+                    if (specialDate.getType() == specialDaysTypeArray[0] || 
+                    specialDate.getType() == specialDaysTypeArray[1]) {
+                        holidaysBetween++;
                     }
                 });
-
-            let tmpDaysBetweenCounter = daysBetween
-
-            for (let i = dayOfWeekNameToInt[dateFormatEE.format(startDate)]; 
-                tmpDaysBetweenCounter > 0; 
-                i = (i + 1) % 7, tmpDaysBetweenCounter--) {
-                if (i == 5 || i == 6) {
-                    workingDaysBetween--;
-                }
-            }
 
             let isOverlapping = false;
 
@@ -213,18 +184,18 @@ sap.ui.define([
                 this.byId("checkBoxVacationCount").setSelected(false);
             }
 
-            vacationDaysCount += (daysBetween - holidaysOnWorkingDaysBetween);
+            vacationDaysCount += (daysBetween - holidaysBetween);
 
             if (vacationDaysCount > 28) {
                 this.byId("checkBoxSumDays").setSelected(false);
             }
 
-            if (daysBetween - holidaysOnWorkingDaysBetween >= 14) {
+            if (daysBetween - holidaysBetween >= 14) {
                 vacationWithAtLeastFourteenDaysCount++;
                 this.byId("checkBoxLongestVacationDuration").setSelected(true);
             }
 
-            this.addRowToVacationTable(startDateString, endDateString, daysBetween, workingDaysBetween);
+            this.addRowToVacationTable(startDateString, endDateString, daysBetween, daysBetween - holidaysBetween);
 
             calendar.removeAllSelectedDates();
         },
@@ -291,24 +262,7 @@ sap.ui.define([
             const checkBoxVacationCount = this.byId("checkBoxVacationCount");
             const checkBoxLongestVacationDuration = this.byId("checkBoxLongestVacationDuration");
 
-            const startDate = dateFormat.parse(startDateText);
-            const endDate = dateFormat.parse(endDateText);
-
-            const daysBetweenInTime = Math.abs(startDate.getTime() - endDate.getTime());
-            const daysBetween = Math.ceil(daysBetweenInTime / (1000 * 60 * 60 * 24)) + 1;
-            let holidaysOnWorkingDaysBetween = 0;
-
-            calendar.getSpecialDates().forEach(
-                specialDate => {
-                    if (specialDate.getStartDate() < startDate || specialDate.getStartDate() > endDate) {
-                        return;
-                    }
-
-                    if (specialDate.getType() == specialDaysTypeArray[1]) {
-                        holidaysOnWorkingDaysBetween++;
-                    }
-                }
-            );
+            const daysWithoutHolidaysBetween = parseInt(workingDaysText);
 
             vacationCount--;
 
@@ -316,13 +270,13 @@ sap.ui.define([
                 checkBoxVacationCount.setSelected(true);
             }
 
-            vacationDaysCount -= (daysBetween - holidaysOnWorkingDaysBetween);
+            vacationDaysCount -= daysWithoutHolidaysBetween;
 
             if (vacationDaysCount <= 28) {
                 checkBoxSumDays.setSelected(true);
             }
             
-            if (daysBetween - holidaysOnWorkingDaysBetween >= 14) {
+            if (daysWithoutHolidaysBetween >= 14) {
                 vacationWithAtLeastFourteenDaysCount--;
 
                 if (vacationWithAtLeastFourteenDaysCount == 0) {

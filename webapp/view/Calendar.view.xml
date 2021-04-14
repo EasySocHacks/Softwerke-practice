@@ -26,7 +26,7 @@
                 <Label text="Количество дней (включая праздники)"/>
             </Column>
             <Column>
-                <Label text="Количество рабочих дней"/>
+                <Label text="Количество дней (не включая праздники)"/>
             </Column>
             <Column width="70px"/>
         </columns>
