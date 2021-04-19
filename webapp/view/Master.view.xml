@@ -1,6 +1,7 @@
 <mvc:View
     controllerName="itmo2021calendareny.controller.Master"
     xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
     displayBlock="true"
     xmlns="sap.m"
 >
@@ -9,7 +10,10 @@
 			<pages>
 				<Page id="page" title="{i18n>title}">
                     <content>
-                        <mvc:XMLView viewName="itmo2021calendareny.view.Calendar"/>
+                        <core:Fragment 
+                            fragmentName="itmo2021calendareny.view.Calendar"
+                            type="XML"
+                        />
 					</content>
 				</Page>
 			</pages>

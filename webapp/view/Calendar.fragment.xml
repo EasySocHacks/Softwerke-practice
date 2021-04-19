@@ -1,8 +1,8 @@
-<mvc:View xmlns:calendar="sap.ui.unified.calendar"
-		controllerName="itmo2021calendareny.controller.Calendar"
+<core:FragmentDefinition 
+        xmlns:calendar="sap.ui.unified.calendar"
         xmlns:l="sap.ui.layout"
 		xmlns:u="sap.ui.unified"
-		xmlns:mvc="sap.ui.core.mvc"
+        xmlns:core="sap.ui.core"
 		xmlns="sap.m"
 		class="viewPadding">
     <Table 
@@ -92,4 +92,4 @@
             width="100%"
             legend="calendarLegend">
     </u:Calendar>
-</mvc:View>
+</core:FragmentDefinition>
