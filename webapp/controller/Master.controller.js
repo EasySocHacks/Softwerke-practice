@@ -9,6 +9,10 @@ sap.ui.define([
 
 		return Controller.extend("itmo2021calendareny.controller.Master", {
 			onInit: function () {
+            },
+
+            onAfterRendering: function() {
+                this.getView().byId("page").scrollTo(0);
             }
 		});
 	});
