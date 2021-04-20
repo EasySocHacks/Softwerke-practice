@@ -5,3 +5,13 @@
 .sapUiUnifiedLegend {
     text-align: center;
 }
+
+.verticalLayout {
+    width: 100%;
+}
+
+.flexBox {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 5px;
+}

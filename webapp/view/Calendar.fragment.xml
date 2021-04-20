@@ -1,0 +1,95 @@
+<core:FragmentDefinition 
+        xmlns:calendar="sap.ui.unified.calendar"
+        xmlns:l="sap.ui.layout"
+		xmlns:u="sap.ui.unified"
+        xmlns:core="sap.ui.core"
+		xmlns="sap.m"
+		class="viewPadding">
+    <Table 
+        id="table"
+        items="{
+            path: 'vacation>/list',
+            sorter: {
+                path: 'startDate',
+                comparator: '.sorterComparator'
+            }
+        }"
+    >
+        <columns>
+            <Column>
+                <Label text="Дата начала"/>
+            </Column>
+            <Column>
+                <Label text="Дата окончания"/>
+            </Column>
+            <Column>
+                <Label text="Количество дней (включая праздники)"/>
+            </Column>
+            <Column>
+                <Label text="Количество дней (не включая праздники)"/>
+            </Column>
+            <Column width="70px"/>
+        </columns>
+        <ColumnListItem>
+            <Text text="{vacation>startDate}"/>
+            <Text text="{vacation>endDate}"/>
+            <Text text="{vacation>fullDays}"/>
+            <Text text="{vacation>workingDays}"/>
+            <Button 
+                icon="sap-icon://delete"
+                press="onDelete"
+            />
+        </ColumnListItem>
+    </Table>
+    <l:VerticalLayout class="verticalLayout">
+        <CheckBox
+            id="checkBoxSumDays"
+            displayOnly="true"
+            text="Суммарная длительность отпусков не превышает 28 дней (без учета гос. праздников)"
+            selected="true"
+        />
+        <CheckBox
+            id="checkBoxVacationCount"
+            displayOnly="true"
+            text="Суммарная количество отпусков не должно превышать 4"
+            selected = "true"
+        />
+        <CheckBox
+            id="checkBoxLongestVacationDuration"
+            displayOnly="true"
+            text="Один из отпусков должен иметь длительность хотя бы 14 дней (без учета гос. праздников)"
+        />
+
+        <FlexBox class="flexBox" justifyContent="SpaceBetween">
+            <Button
+                id="addVacationButton"
+                icon="sap-icon://add"
+                press="onAddVacation"
+            />
+            <Button
+                id="confirmVacationButton"
+                text="Подтвердить"
+                press="onConfirmVacation"
+            />
+        </FlexBox>
+
+        <FlexBox class="flexBox" justifyContent="End">
+
+            <Button
+                id="fixVacationButton"
+                text="Исправить"
+                press="onFixVacation"
+                visible="false"
+            />
+        </FlexBox>
+    </l:VerticalLayout>
+    <u:CalendarLegend id="calendarLegend" columnWidth="200px"/>
+	<u:Calendar
+            id="calendar"
+            intervalSelection="true"
+            showWeekNumbers="false"
+            months="12"
+            width="100%"
+            legend="calendarLegend">
+    </u:Calendar>
+</core:FragmentDefinition>
