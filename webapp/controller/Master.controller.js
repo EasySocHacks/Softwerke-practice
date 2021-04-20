@@ -100,7 +100,7 @@ sap.ui.define([
         onAddVacation: function() {
             const calendar = this.byId("calendar");
 
-            if (calendar.getSelectedDates()[0] == undefined) {
+            if (!calendar.getSelectedDates()[0]) {
                 Toast.show("Выделите период, чтобы добавить отпуск");
                 return;
             }
@@ -108,7 +108,7 @@ sap.ui.define([
             const startDate = calendar.getSelectedDates()[0].getStartDate();
             const endDate = calendar.getSelectedDates()[0].getEndDate();
 
-            if (endDate == null) {
+            if (!endDate) {
                 Toast.show("Выделите период, чтобы добавить отпуск");
                 return;
             }
@@ -128,8 +128,8 @@ sap.ui.define([
             const holidaysBetween = calendar.getSpecialDates().filter(
                 specialDate =>
                     !(specialDate.getStartDate() < startDate || specialDate.getStartDate() > endDate) &&
-                    (specialDate.getType() == specialDaysTypeArray[0] || 
-                    specialDate.getType() == specialDaysTypeArray[1])
+                    (specialDate.getType() === specialDaysTypeArray[0] || 
+                    specialDate.getType() === specialDaysTypeArray[1])
             ).length;
 
             let isOverlapping = false;
@@ -160,19 +160,19 @@ sap.ui.define([
         addRowToVacationTable: function(startDate, endDate, fullDays, workingDays) {
             const newData = vacationTableModel.getProperty("/list");
             newData.push({
-                "startDate": startDate,
-                "endDate": endDate,
-                "fullDays": fullDays,
-                "workingDays": workingDays
+                "startDate": startDate.toString(),
+                "endDate": endDate.toString(),
+                "fullDays": fullDays.toString(),
+                "workingDays": workingDays.toString()
             });
 
             vacationTableModel.setData({"list": newData});
         },
 
         onConfirmVacation: function() {
-            if (this.byId("checkBoxSumDays").getSelected() == true &&
-                this.byId("checkBoxVacationCount").getSelected() == true &&
-                this.byId("checkBoxLongestVacationDuration").getSelected() == true) {
+            if (this.byId("checkBoxSumDays").getSelected() &&
+                this.byId("checkBoxVacationCount").getSelected() &&
+                this.byId("checkBoxLongestVacationDuration").getSelected()) {
                 this.changeVacationTableToolsVisible(false);
             } else {
                 Toast.show("Все условия должны быть выполнены");
@@ -197,10 +197,10 @@ sap.ui.define([
             const newData = vacationTableModel.getProperty("/list").filter(
                 function(value) {
                     return !(
-                        startDateText == value["startDate"] &&
-                        endDateText == value["endDate"] &&
-                        fullDaysText == value["fullDays"] &&
-                        workingDaysText == value["workingDays"]
+                        startDateText === value["startDate"] &&
+                        endDateText === value["endDate"] &&
+                        fullDaysText === value["fullDays"] &&
+                        workingDaysText === value["workingDays"]
                     );
                 }
             );
@@ -243,7 +243,7 @@ sap.ui.define([
                 this.byId("checkBoxVacationCount").setSelected(!previosOperationType);
             }
 
-            if ((vacationDaysCount > 28 && previosOperationType) || (vacationCount <= 28 && !previosOperationType)) {
+            if ((vacationDaysCount > 28 && previosOperationType) || (vacationDaysCount <= 28 && !previosOperationType)) {
                 this.byId("checkBoxSumDays").setSelected(!previosOperationType);
             }
 
@@ -254,7 +254,7 @@ sap.ui.define([
                 if (previosOperationType) {
                     checkBoxLongestVacationDuration.setSelected(true);
                 } else {
-                    if (vacationWithAtLeastFourteenDaysCount == 0) {
+                    if (vacationWithAtLeastFourteenDaysCount === 0) {
                         checkBoxLongestVacationDuration.setSelected(false);
                     }
                 }
